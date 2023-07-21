@@ -6,7 +6,7 @@
 /*   By: hkaddour <hkaddour@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 10:34:30 by hkaddour          #+#    #+#             */
-/*   Updated: 2023/06/19 10:06:47 by hkaddour         ###   ########.fr       */
+/*   Updated: 2023/07/18 10:56:19 by hkaddour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,8 @@ class Default_serv
 	std::vector<int>	listen;
 	std::vector<std::string>	index;
 	std::vector<std::string>	server_name;
-	std::vector<std::pair<int, std::string> > status_page;
+	//std::vector<std::pair<int, std::string> > status_page;
+	std::map<int, std::string>	status_page;
 	std::vector<std::pair<std::string, std::string> > cgi_info;
 	//those ones never repeated
 	std::string	host;
@@ -68,7 +69,8 @@ class Default_serv
 		std::vector<int> get_listen(void) const;
 		std::vector<std::string> get_index(void) const;
 		std::vector<std::string> get_server_name(void) const;
-		std::vector<std::pair<int, std::string> >	get_status_page(void) const;
+		//std::vector<std::pair<int, std::string> >	get_status_page(void) const;
+		std::map<int, std::string>	get_status_page(void) const;
 		std::vector<std::pair<std::string, std::string> >	get_cgi_info(void) const;
 		std::string get_host(void) const;
 		std::string get_root(void) const;

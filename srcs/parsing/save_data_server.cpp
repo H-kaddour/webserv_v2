@@ -1,4 +1,4 @@
-#include "../include/Parsing.hpp"
+#include "../../include/Parsing.hpp"
 
 std::vector<std::pair<Parsing::t_tokens, std::string> >::iterator	Parsing::get_end_closing_braces(int)
 {
@@ -32,7 +32,8 @@ void	Parsing::check_wish_directive(int check, std::vector<std::string> data)
 			if (!check)
 				((*(this->servers.end() - 1))->*serv_func[i])(data);
 			else
-				(*(std::prev((*(this->servers.end() - 1))->get_location().end()))->second.*serv_func[i])(data);
+				(*((*(this->servers.end() - 1))->get_location().find(this->directive_name[i].second))->second.*serv_func[i])(data);
+				//(*(std::prev((*(this->servers.end() - 1))->get_location().end()))->second.*serv_func[i])(data);
 			return ;
 		}
 	}
@@ -54,7 +55,6 @@ void	Parsing::parse_location(void)
 	std::vector<std::pair<t_tokens, std::string> >::iterator	iter;
 	std::pair<std::string, Location*> hold((this->begin + 1)->second, location);
 	this->servers_itr = std::prev(this->get_servers().end());
-
 	size_location = (*(this->servers.end() - 1))->get_location().size();
 	(*(this->servers.end() - 1))->set_locations(hold);
 	if ((*this->servers_itr)->get_location().size() == size_location)

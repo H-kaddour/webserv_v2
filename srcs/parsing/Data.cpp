@@ -1,4 +1,4 @@
-#include "../include/Data.hpp"
+#include "../../include/Data.hpp"
 
 Data::Data() {
 	//std::cout << "Data Default constructer" << std::endl;
@@ -21,6 +21,16 @@ Data	& Data::operator=(const Data & obj)
 	return (*this);
 }
 
+//func
+void	Data::server_execution(void)
+{
+	//this one delete it in the destructer
+	this->socket = new Socket;
+	this->socket->set_servers(this->servers);
+	this->socket->open_sockets();
+}
+
+//getter
 std::vector<Server*> &Data::get_servers(void)
 {
 	return (this->servers);

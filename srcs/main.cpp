@@ -21,19 +21,14 @@ void	l()
 
 int	main(int ac, char **av)
 {
-	//if two servers don't have port to listen in change the port default port for every one of them
-	//server { don't have port means have port 80 and the other one have port 80 errors}
 	if (ac > 2)
 	{
 		std::cerr << "Error: wrong argument" << std::endl;
 		return (1);
 	}
-	//in case of webserv empty kay5wer fe constructers and SEGV
 	Parsing	*parse = &return_parsing_obj(ac, av[1]);
-	//(void)pars;
 	Data data(*parse);
+	data.server_execution();
 	delete parse;
-	//Data data(return_parsing_obj(ac, av[1]));
-	atexit(l);
 	return (0);
 }

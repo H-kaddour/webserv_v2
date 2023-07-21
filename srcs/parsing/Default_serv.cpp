@@ -1,19 +1,21 @@
-#include "../include/Default_serv.hpp"
+#include "../../include/Default_serv.hpp"
 
 //this one for the server
 Default_serv::Default_serv(void)
 {
 	//std::cout << "Defautl_serv constructer" << std::endl;
 	this->listen.push_back(8080);
-	this->index.push_back("index.html");
+	//this->index.push_back("index.html");
 	this->server_name.push_back("localhost");
-	this->status_page.push_back(std::make_pair(200, "status_page/200.html"));
-	this->status_page.push_back(std::make_pair(301, "status_page/301.html"));
-	this->status_page.push_back(std::make_pair(400, "status_page/400.html"));
-	this->status_page.push_back(std::make_pair(404, "status_page/404.html"));
-	this->status_page.push_back(std::make_pair(405, "status_page/405.html"));
-	this->status_page.push_back(std::make_pair(503, "status_page/503.html"));
-	this->status_page.push_back(std::make_pair(505, "status_page/505.html"));
+
+	this->status_page.insert(std::make_pair(200, "status_page/200.html"));
+	this->status_page.insert(std::make_pair(301, "status_page/301.html"));
+	this->status_page.insert(std::make_pair(400, "status_page/400.html"));
+	this->status_page.insert(std::make_pair(404, "status_page/404.html"));
+	this->status_page.insert(std::make_pair(405, "status_page/405.html"));
+	this->status_page.insert(std::make_pair(503, "status_page/503.html"));
+	this->status_page.insert(std::make_pair(505, "status_page/505.html"));
+
 	this->host = "127.0.0.1";
 	this->root = "var/www/";
 	this->client_max_body_size = "10000";
@@ -54,8 +56,8 @@ void	Default_serv::take_off_default_setup(void)
 {
 	if (this->listen.size() > 1)
 		this->listen.erase(this->listen.begin());
-	if (this->index.size() > 1)
-		this->index.erase(this->index.begin());
+	//if (this->index.size() > 1)
+	//	this->index.erase(this->index.begin());
 	if (this->server_name.size() > 1)
 		this->server_name.erase(this->server_name.begin());
 	if (this->allow_methods.size() > 1)
@@ -99,6 +101,8 @@ int	Default_serv::check_if_number(std::string data)
 
 void	Default_serv::check_status_code(std::string data)
 {
+	//std::string	status = "200OK 201Created 204No_Content 301Moved_Permanently 400Bad_Request 403Forbidden 404Not_Found 405Method_Not_Allowed 409Conflict 413Content_Too_Large 414URI_Too_Long 500Internal_Server_Error 501Not_Implemented";
+	//here i should only check the error pages not comfimed status code
 	if (data.compare("200") && data.compare("301") && data.compare("400") \
 			&& data.compare("404") && data.compare("405") && data.compare("503") \
 			&& data.compare("505"))
@@ -130,20 +134,22 @@ void	Default_serv::set_server_name(std::vector<std::string> data)
 void	Default_serv::set_status_page(std::vector<std::string> data)
 {
 	check_status_code(data[0]);
-	if (atoi(data[0].c_str()) == 200)
-		this->status_page[0].second = data[1];
-	else if (atoi(data[0].c_str()) == 301)
-		this->status_page[1].second = data[1];
-	else if (atoi(data[0].c_str()) == 400)
-		this->status_page[2].second = data[1];
-	else if (atoi(data[0].c_str()) == 404)
-		this->status_page[3].second = data[1];
-	else if (atoi(data[0].c_str()) == 405)
-		this->status_page[4].second = data[1];
-	else if (atoi(data[0].c_str()) == 503)
-		this->status_page[5].second = data[1];
-	else if (atoi(data[0].c_str()) == 505)
-		this->status_page[6].second = data[1];
+	std::map<int, std::string>::iterator itr = this->status_page.find(atoi(data[0].c_str()));
+	itr->second = data[1];
+	//if (atoi(data[0].c_str()) == 200)
+	//	this->status_page[0].second = data[1];
+	//else if (atoi(data[0].c_str()) == 301)
+	//	this->status_page[1].second = data[1];
+	//else if (atoi(data[0].c_str()) == 400)
+	//	this->status_page[2].second = data[1];
+	//else if (atoi(data[0].c_str()) == 404)
+	//	this->status_page[3].second = data[1];
+	//else if (atoi(data[0].c_str()) == 405)
+	//	this->status_page[4].second = data[1];
+	//else if (atoi(data[0].c_str()) == 503)
+	//	this->status_page[5].second = data[1];
+	//else if (atoi(data[0].c_str()) == 505)
+	//	this->status_page[6].second = data[1];
 	//maybe here check the path file if exist too
 }
 
@@ -202,9 +208,9 @@ void	Default_serv::set_upload(int data)
 void	Default_serv::set_autoindex(std::vector<std::string> data)
 {
 	if (!data[0].compare("on"))
-		this->upload = 1;
+		this->autoindex = 1;
 	else if (!data[0].compare("off"))
-		this->upload = 0;
+		this->autoindex = 0;
 	else
 		throw ("Error: wrong syntax autoindex only takes on/off.");
 }
@@ -254,7 +260,7 @@ std::vector<std::string> Default_serv::get_server_name(void) const
 	return (this->server_name);
 }
 
-std::vector<std::pair<int, std::string> >	Default_serv::get_status_page(void) const
+std::map<int, std::string>	Default_serv::get_status_page(void) const
 {
 	return (this->status_page);
 }

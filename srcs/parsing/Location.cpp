@@ -1,4 +1,4 @@
-#include "../include/Location.hpp"
+#include "../../include/Location.hpp"
 
 Location::Location(void) : Default_serv(0) {
 	//std::cout << "location constructer" << std::endl;
