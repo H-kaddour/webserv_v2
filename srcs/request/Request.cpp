@@ -113,6 +113,7 @@ void	Request::parse_request_line(void) {
 		if (req.size() > 3)
 			throw "400";
 		this->method = req.at(0);
+		//here take off the query ?ll=lll
 		this->uri = req.at(1);
 		this->req_http = req.at(2);
 		//check if method is correct
@@ -144,7 +145,7 @@ void	Request::check_header_variables(void) {
 	std::map<std::string, std::string>::iterator	itr2 = this->req_headers.find("Content-Length");
 	if (itr != this->req_headers.end() && itr->second.compare("chuncked"))
 		throw "501";
-	if (!this->method.compare("Post") && \
+	if (!this->method.compare("POST") && \
 			(itr == this->req_headers.end() || itr2 == this->req_headers.end()))
 		throw "400";
 	//check the uri chracter if allowed and check length of uri
