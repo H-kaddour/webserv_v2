@@ -17,7 +17,7 @@
 class Request {
 	protected :
 		//attributes of Request
-		std::string	input;
+		std::string	req_input;
 		int	fd;
 		//
 		std::string	method;
@@ -25,6 +25,11 @@ class Request {
 		std::string	req_http;
 		std::map<std::string, std::string>	req_headers;
 		std::string	req_body;
+		std::string	query;
+		//i need here another request uri so i can edit it 
+		//this one to put the location and server data in
+		Default_serv	*location_data;
+		std::string	hld_uri;
 
 		//attributes of Response
 		std::string	res_http;
@@ -45,19 +50,21 @@ class Request {
 		Request &operator=(const Request &obj);
 		//func
 		std::vector<std::string>	split(std::string input, char sp);
-		void	parse_request(void);
+		//void	parse_request(void);
+		void	handle_request_and_response(int &chk);
 		std::string	response_status_line(void);
 		std::string	response_header(void);
 		std::string	response_msg_body(void);
 		void	parse_request_line(void);
 		void	parse_header(void);
-		void	parse_body(void);
+		bool	parse_body(void);
 		bool	check_uri_character(char c);
 		void	send_the_request(std::string status);
 		void	check_location_if_exist(void);
-		std::string	substr(std::string path, char sp);
+		std::string	substr_sp(std::string path, char sp);
+		void	fix_uri_slashes(std::string right_uri, std::string &uri);
 		//setters
-		void	set_input(std::string input);
+		void	set_req_input(char *buff, int size);
 		void	set_fd(int fd);
 		void	set_res_status(std::string status);
 		void	set_server(Server *serv);
@@ -65,6 +72,7 @@ class Request {
 		void	set_res_body(void);
 		void	set_res_header(void);
 		//getter
+		std::string get_req_input(void) const;
 		~Request(void);
 };
 //    GET   /   HTTP/1.1  \r\n

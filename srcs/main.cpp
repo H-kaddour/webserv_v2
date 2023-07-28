@@ -28,7 +28,7 @@ int	main(int ac, char **av)
 	}
 	Parsing	*parse = &return_parsing_obj(ac, av[1]);
 	Data data(*parse);
-	data.server_execution();
 	delete parse;
+	data.server_execution();
 	return (0);
 }
