@@ -27,6 +27,8 @@ Default_serv::Default_serv(void)
 //this one for location
 Default_serv::Default_serv(int) {
 	//std::cout << "Defautl_serv for location constructer" << std::endl;
+	this->upload = -1;
+	this->autoindex = -1;
 }
 
 Default_serv::Default_serv(const Default_serv & obj)
@@ -34,8 +36,69 @@ Default_serv::Default_serv(const Default_serv & obj)
 	*this = obj;
 }
 
-Default_serv & Default_serv::operator=(const Default_serv & obj)
-{
+Default_serv::Default_serv(const Default_serv &server, const Default_serv &location) {
+	if (!location.listen.size())
+		this->listen = server.listen;
+	else
+		this->listen = location.listen;
+
+	if (!location.index.size())
+		this->index = server.index;
+	else
+		this->index = location.index;
+
+	if (!location.server_name.size())
+		this->server_name = server.server_name;
+	else
+		this->server_name = location.server_name;
+
+	if (!location.status_page.size())
+		this->status_page = server.status_page;
+	else
+		this->status_page = location.status_page;
+
+	if (!location.cgi_info.size())
+		this->cgi_info = server.cgi_info;
+	else
+		this->cgi_info = location.cgi_info;
+
+	if (!location.host.size())
+		this->host = server.host;
+	else
+		this->host = location.host;
+
+	if (!location.root.size())
+		this->root = server.root;
+	else
+		this->root = location.root;
+
+	if (!location.client_max_body_size.size())
+		this->client_max_body_size = server.client_max_body_size;
+	else
+		this->client_max_body_size = location.client_max_body_size;
+
+	if (location.upload == -1)
+		this->upload = server.upload;
+	else
+		this->upload = location.upload;
+
+	if (location.autoindex == -1)
+		this->autoindex = server.autoindex;
+	else
+		this->autoindex = location.autoindex;
+
+	if (!location.allow_methods.size())
+		this->allow_methods = server.allow_methods;
+	else
+		this->allow_methods = location.allow_methods;
+
+	if (!location.retur.size())
+		this->retur = server.retur;
+	else
+		this->retur = location.retur;
+}
+
+Default_serv & Default_serv::operator=(const Default_serv & obj) {
 	this->listen = obj.listen;
 	this->index = obj.index;
 	this->server_name = obj.server_name;
@@ -52,8 +115,7 @@ Default_serv & Default_serv::operator=(const Default_serv & obj)
 }
 
 //parsing
-void	Default_serv::take_off_default_setup(void)
-{
+void	Default_serv::take_off_default_setup(void) {
 	if (this->listen.size() > 1)
 		this->listen.erase(this->listen.begin());
 	//if (this->index.size() > 1)
@@ -64,8 +126,7 @@ void	Default_serv::take_off_default_setup(void)
 		this->allow_methods.erase(this->allow_methods.begin());
 }
 
-void	Default_serv::check_server_setup_duplicate(std::vector<int> &port_checking)
-{
+void	Default_serv::check_server_setup_duplicate(std::vector<int> &port_checking) {
 	for (int	i = 0; i < static_cast<int>(this->listen.size()); i++)
 	{
 		port_checking.push_back(this->listen[i]);
@@ -89,8 +150,7 @@ void	Default_serv::check_server_setup_duplicate(std::vector<int> &port_checking)
 	}
 }
 
-int	Default_serv::check_if_number(std::string data)
-{
+int	Default_serv::check_if_number(std::string data) {
 	for (std::string::iterator it = data.begin(); it != data.end(); it++)
 	{
 		if (!isdigit(*it))
@@ -99,8 +159,7 @@ int	Default_serv::check_if_number(std::string data)
 	return (0);
 }
 
-void	Default_serv::check_status_code(std::string data)
-{
+void	Default_serv::check_status_code(std::string data) {
 	//std::string	status = "200OK 201Created 204No_Content 301Moved_Permanently 400Bad_Request 403Forbidden 404Not_Found 405Method_Not_Allowed 409Conflict 413Content_Too_Large 414URI_Too_Long 500Internal_Server_Error 501Not_Implemented";
 	//here i should only check the error pages not comfimed status code
 	if (data.compare("200") && data.compare("301") && data.compare("400") \
@@ -110,8 +169,7 @@ void	Default_serv::check_status_code(std::string data)
 }
 
 //setters
-void	Default_serv::set_listen(std::vector<std::string> data)
-{
+void	Default_serv::set_listen(std::vector<std::string> data) {
 	if (check_if_number(data[0]))
 		throw ("Error: listen directive only takes number port.");
 	if (!(atoi(data[0].c_str()) >= 0 && atoi(data[0].c_str()) <= 65536))
@@ -119,20 +177,17 @@ void	Default_serv::set_listen(std::vector<std::string> data)
 	this->listen.push_back(atoi(data[0].c_str()));
 }
 
-void	Default_serv::set_index(std::vector<std::string> data)
-{
+void	Default_serv::set_index(std::vector<std::string> data) {
 	for (int	i = 0; i < static_cast<int>(data.size()); i++)
 		this->index.push_back(data[i]);
 }
 
-void	Default_serv::set_server_name(std::vector<std::string> data)
-{
+void	Default_serv::set_server_name(std::vector<std::string> data) {
 	for (int	i = 0; i < static_cast<int>(data.size()); i++)
 		this->server_name.push_back(data[i]);
 }
 
-void	Default_serv::set_status_page(std::vector<std::string> data)
-{
+void	Default_serv::set_status_page(std::vector<std::string> data) {
 	check_status_code(data[0]);
 	std::map<int, std::string>::iterator itr = this->status_page.find(atoi(data[0].c_str()));
 	itr->second = data[1];
@@ -153,8 +208,7 @@ void	Default_serv::set_status_page(std::vector<std::string> data)
 	//maybe here check the path file if exist too
 }
 
-void	Default_serv::set_cgi_info(std::vector<std::string> data)
-{
+void	Default_serv::set_cgi_info(std::vector<std::string> data) {
 	if (data[0].compare(".py") && data[0].compare(".php"))
 		throw ("Error: this server only serve .php and .py script.");
 	for (int i = 0; i < static_cast<int>(this->cgi_info.size()); i++)
@@ -165,33 +219,30 @@ void	Default_serv::set_cgi_info(std::vector<std::string> data)
 	this->cgi_info.push_back(std::make_pair(data[0], data[1]));
 }
 
-void	Default_serv::set_host(std::vector<std::string> data)
-{
+void	Default_serv::set_host(std::vector<std::string> data) {
 	this->host = data[0];
 	//here check if it's an ip addres by the socket syscall
 }
 
-void	Default_serv::set_root(std::vector<std::string> data)
-{
+void	Default_serv::set_root(std::vector<std::string> data) {
 	this->root = data[0];
-	DIR *dir;
+	//DIR *dir;
 
-	if (!(dir = opendir(this->root.c_str())))
-		throw ("Error: root directory not exists.");
-  closedir(dir);
+	//if (!(dir = opendir(this->root.c_str())))
+	//	throw ("Error: root directory not exists.");
+  //closedir(dir);
+
 	//maybe here keep the dir fd to use it in the execution
 }
 
-void	Default_serv::set_client_max_body_size(std::vector<std::string> data)
-{
+void	Default_serv::set_client_max_body_size(std::vector<std::string> data) {
 	if (check_if_number(data[0]))
 		throw ("Error: client_max_body_size only takes digit.");
 	this->client_max_body_size = data[0];
 	//check it if the number is valide
 }
 
-void	Default_serv::set_upload(std::vector<std::string> data)
-{
+void	Default_serv::set_upload(std::vector<std::string> data) {
 	if (!data[0].compare("on"))
 		this->upload = 1;
 	else if (!data[0].compare("off"))
@@ -200,13 +251,11 @@ void	Default_serv::set_upload(std::vector<std::string> data)
 		throw ("Error: wrong syntax upload only takes on/off.");
 }
 
-void	Default_serv::set_upload(int data)
-{
+void	Default_serv::set_upload(int data) {
 	this->upload = data;
 }
 
-void	Default_serv::set_autoindex(std::vector<std::string> data)
-{
+void	Default_serv::set_autoindex(std::vector<std::string> data) {
 	if (!data[0].compare("on"))
 		this->autoindex = 1;
 	else if (!data[0].compare("off"))
@@ -215,13 +264,11 @@ void	Default_serv::set_autoindex(std::vector<std::string> data)
 		throw ("Error: wrong syntax autoindex only takes on/off.");
 }
 
-void	Default_serv::set_autoindex(int data)
-{
+void	Default_serv::set_autoindex(int data) {
 	this->autoindex = data;
 }
 
-void	Default_serv::set_allow_methods(std::vector<std::string> data)
-{
+void	Default_serv::set_allow_methods(std::vector<std::string> data) {
 	for (int	i = 0; i < static_cast<int>(data.size()); i++)
 	{
 		if (data[i].compare("GET") && data[i].compare("POST") && data[i].compare("DELETE"))
@@ -230,8 +277,7 @@ void	Default_serv::set_allow_methods(std::vector<std::string> data)
 	}
 }
 
-void	Default_serv::set_return(std::vector<std::string> data)
-{
+void	Default_serv::set_return(std::vector<std::string> data) {
 	check_status_code(data[0]);
 	for (int	i = 0; i < static_cast<int>(this->retur.size()); i++)
 	{
@@ -245,67 +291,54 @@ void	Default_serv::set_return(std::vector<std::string> data)
 }
 
 //getters
-std::vector<int> Default_serv::get_listen(void) const
-{
+std::vector<int> Default_serv::get_listen(void) const {
 	return (this->listen);
 }
 
-std::vector<std::string> Default_serv::get_index(void) const
-{
+std::vector<std::string> Default_serv::get_index(void) const {
 	return (this->index);
 }
 
-std::vector<std::string> Default_serv::get_server_name(void) const
-{
+std::vector<std::string> Default_serv::get_server_name(void) const {
 	return (this->server_name);
 }
 
-std::map<int, std::string>	Default_serv::get_status_page(void) const
-{
+std::map<int, std::string>	Default_serv::get_status_page(void) const {
 	return (this->status_page);
 }
 
-std::vector<std::pair<std::string, std::string> >	Default_serv::get_cgi_info(void) const
-{
+std::vector<std::pair<std::string, std::string> >	Default_serv::get_cgi_info(void) const {
 	return (this->cgi_info);
 }
 
-std::string Default_serv::get_host(void) const
-{
+std::string Default_serv::get_host(void) const {
 	return (this->host);
 }
 
-std::string Default_serv::get_root(void) const
-{
+std::string Default_serv::get_root(void) const {
 	return (this->root);
 }
 
-std::string Default_serv::get_client_max_body_size(void) const
-{
+std::string Default_serv::get_client_max_body_size(void) const {
 	return (this->client_max_body_size);
 }
 
-int	Default_serv::get_upload(void) const
-{
+int	Default_serv::get_upload(void) const {
 	return (this->upload);
 }
 
-int	Default_serv::get_autoindex(void) const
-{
+int	Default_serv::get_autoindex(void) const {
 	return (this->autoindex);
 }
 
-std::vector<std::string> Default_serv::get_allow_methods(void) const
-{
+std::vector<std::string> Default_serv::get_allow_methods(void) const {
 	return (this->allow_methods);
 }
 
-std::vector<std::pair<int, std::string> >	Default_serv::get_retur(void) const
-{
+std::vector<std::pair<int, std::string> >	Default_serv::get_retur(void) const {
 	return (this->retur);
 }
 
-Default_serv::~Default_serv(void)
-{
+Default_serv::~Default_serv(void) {
 	//std::cout << "Default_serv default destructer." << std::endl;
 }

@@ -173,10 +173,10 @@ std::string	Request::substr_sp(std::string path, char sp) {
 	size_t	i;
 	size_t	j;
 
-	for (i = 0; (i < (path.length() -1) && path.at(i) == sp);)
-		i++;
-	for (j = (path.length() - 1); ( (path.length() -1) && path.at(j) == sp);)
-		j--;
+	for (i = 0; (i < path.length() && path.at(i) == sp); i++)
+		;
+	for (j = (path.length() - 1); path.length() && path.at(j) == sp; j--)
+		;
 	return (path.substr(i, (j - i) + 1));
 }
 
@@ -287,34 +287,76 @@ void	Request::fix_uri_slashes(std::string right_uri, std::string &uri) {
 	hld = this->split(this->substr_sp(right_uri, '/'), '/');
 	//std::cout << this->uri << std::endl;
 	for (std::vector<std::string>::iterator itr = hld.begin(); itr != hld.end(); itr++, i++) {
-		if (!i && *right_uri.begin() == '/')
-			uri.append("/");
+		uri.append("/");
+		if (!i && right_uri.front() != '/')
+			uri.erase(0);
 		uri.append(*itr);
 	}
 	if (right_uri.back() == '/')
 		uri.append("/");
 }
 
+std::string	Request::fix_location_slashes(std::string location) {
+	//size_t	i;
+	//for (i = 0; location[i] && location[i] == '/'; i++)
+	//	;
+	//if (i == location.length())
+	//	return "/";
+
+	//int chk = 0;
+	//if (location[location.length() - 1] == '/')
+	//	chk = 1;
+	for (int i = location.length() - 1; location.length() && location[i] == '/'; i = location.length() - 1)
+		location.erase(i);
+	if (!location.length())
+		return "/";
+	//if (chk)
+	//	location.push_back('/');
+	return location;
+}
+
 void	Request::check_location_if_exist(void) {
-	std::vector<std::string>	hld;
+	//std::vector<std::string>	hld;
 
-	hld = this->split(this->substr_sp(this->uri, '/'), '/');
-	std::cout << this->uri << std::endl;
-	for (std::vector<std::string>::iterator itr = hld.begin(); itr != hld.end(); itr++) {
-		this->hld_uri.append("/");
-		this->hld_uri.append(*itr);
+	//hld = this->split(this->substr_sp(this->uri, '/'), '/');
+	//std::cout << this->uri << std::endl;
+	//for (std::vector<std::string>::iterator itr = hld.begin(); itr != hld.end(); itr++) {
+	//	this->hld_uri.append("/");
+	//	this->hld_uri.append(*itr);
+	//}
+	//if (this->uri.back() == '/')
+	//	this->hld_uri.append("/");
+
+	size_t	i;
+	std::string	hld;
+	std::string hld_loc;
+	for (i = 0; this->uri[i] && this->uri[i] == '/'; i++)
+		;
+	if (i == this->uri.length())
+		this->hld_uri = "/";
+	else
+	{
+		this->fix_uri_slashes(this->uri, this->hld_uri);
+		if (this->hld_uri[this->hld_uri.length() - 1] == '/')
+			hld = this->hld_uri.substr(0, this->hld_uri.length() - 1);
+		else
+			hld = this->hld_uri;
 	}
-	if (this->uri.back() == '/')
-		this->hld_uri.append("/");
-
-	this->fix_uri_slashes(this->hld_uri, this->uri);
+	//std::cout << hld << std::endl;
 
 	//here search for the location path
 	for (std::map<std::string, Location*>::iterator itr = this->server->get_location().begin(); \
 			itr != this->server->get_location().end(); itr++) {
+		hld_loc = fix_location_slashes(itr->first);
+		//std::cout << hld_loc << std::endl;
+		if (!hld_loc.compare(hld)) {
+			//*location_data = *itr->second;
+			this->location_data = new Default_serv(*this->server, *itr->second);
+			return ;
+		}
 	}
-	//std::cout << this->hld_uri << std::endl;
-	//while (1);
+	this->location_data = new Default_serv(*this->server);
+	while (1);
 	
 }
 
@@ -338,6 +380,7 @@ void	Request::handle_request_and_response(int &chk) {
 		}
 		if (!this->parse_body())
 			return ;
+		//std::cout << "ll" << std::endl;
 		this->check_location_if_exist();
 
 		//
@@ -386,7 +429,7 @@ void	Request::handle_request_and_response(int &chk) {
 }
 
 Request::~Request(void) {
-
+	//here i have to delete location_data
 }
 
 

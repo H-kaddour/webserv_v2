@@ -31,6 +31,8 @@ class	Parsing : public Data
 	std::vector<std::pair<t_tokens, std::string> >::iterator	end;
 	//holds tokens of tokenizer to push in token
 	std::pair<t_tokens, std::string> hold;
+	//this one hold location key so to search it in the map to call the func
+	std::string	location_name;
 
 	public :
 	//here i should add copy constructer and shiit

@@ -71,7 +71,7 @@ void	Data::open_sockets(void) {
 				bzero(this->buff, KB);
 				//request.clear();
 				int	rd = read(this->cnx, this->buff, KB);
-				std::cout << rd << std::endl;
+				//std::cout << rd << std::endl;
 				//if (!rd) {
 				//	//here get of delete don't gave content length
 				//	//if (this->request.get_req_method().compare("POST"))

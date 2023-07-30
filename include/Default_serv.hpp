@@ -6,7 +6,7 @@
 /*   By: hkaddour <hkaddour@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 10:34:30 by hkaddour          #+#    #+#             */
-/*   Updated: 2023/07/18 10:56:19 by hkaddour         ###   ########.fr       */
+/*   Updated: 2023/07/30 12:58:24 by hkaddour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ class Default_serv
 		//constructers
 		Default_serv(void);
 		Default_serv(int);
+		Default_serv(const Default_serv &server, const Default_serv &location);
 		Default_serv(const Default_serv & obj);
 		Default_serv & operator=(const Default_serv & obj);
 		//setters

@@ -63,6 +63,7 @@ class Request {
 		void	check_location_if_exist(void);
 		std::string	substr_sp(std::string path, char sp);
 		void	fix_uri_slashes(std::string right_uri, std::string &uri);
+		std::string	fix_location_slashes(std::string location);
 		//setters
 		void	set_req_input(char *buff, int size);
 		void	set_fd(int fd);
