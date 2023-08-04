@@ -170,14 +170,15 @@ void	Request::check_header_variables(void) {
 }
 
 std::string	Request::substr_sp(std::string path, char sp) {
-	size_t	i;
-	size_t	j;
+	std::string::iterator	itr;
 
-	for (i = 0; (i < path.length() && path.at(i) == sp); i++)
-		;
-	for (j = (path.length() - 1); path.length() && path.at(j) == sp; j--)
-		;
-	return (path.substr(i, (j - i) + 1));
+	//here maybe check
+	for (itr = path.begin(); path.length() && *itr == sp; itr = path.begin())
+		path.erase(itr);
+	for (itr = path.end() - 1; path.length() && *itr == sp; itr = path.end() - 1)
+		path.erase(itr);
+	//return (path.substr(i, (j - i) + 1));
+	return path;
 }
 
 void	Request::parse_header(void) {
@@ -208,8 +209,9 @@ void	Request::parse_header(void) {
 		//std::pair<std::string, std::string>	var(itr->substr(0, find), itr->substr(find + 1, itr->length() - 1));
 		std::pair<std::string, std::string>	var(itr->substr(0, find), \
 				this->substr_sp(itr->substr(find + 1, itr->length() - 1), ' '));
-		for (std::string::iterator i = var.first.begin(); i != var.first.end(); i++) {
-			if (isspace(*i))
+		//maybe i shouldn't check this one
+		for (std::string::iterator itr = var.first.begin(); itr != var.first.end(); itr++) {
+			if (isspace(*itr))
 				throw "400";
 		}
 		this->req_headers.insert(var);
@@ -276,24 +278,25 @@ void	Request::send_the_request(std::string status) {
 	this->response.append(this->response_status_line());
 	this->response.append(this->response_header());
 	this->response.append(this->response_msg_body());
+	//std::cout << this->response << std::endl;
 	write(this->fd, this->response.c_str(), this->response.length());
 	//send it and clear the var
 }
 
-void	Request::fix_uri_slashes(std::string right_uri, std::string &uri) {
+void	Request::fix_uri_slashes(std::string src, std::string &dest) {
 	std::vector<std::string>	hld;
 	int	i = 0;
 
-	hld = this->split(this->substr_sp(right_uri, '/'), '/');
+	hld = this->split(this->substr_sp(src, '/'), '/');
 	//std::cout << this->uri << std::endl;
 	for (std::vector<std::string>::iterator itr = hld.begin(); itr != hld.end(); itr++, i++) {
-		uri.append("/");
-		if (!i && right_uri.front() != '/')
-			uri.erase(0);
-		uri.append(*itr);
+		dest.append("/");
+		if (!i && src.front() != '/')
+			dest.erase(0);
+		dest.append(*itr);
 	}
-	if (right_uri.back() == '/')
-		uri.append("/");
+	if (src.back() == '/')
+		dest.append("/");
 }
 
 std::string	Request::fix_location_slashes(std::string location) {
@@ -315,7 +318,8 @@ std::string	Request::fix_location_slashes(std::string location) {
 	return location;
 }
 
-void	Request::check_location_if_exist(void) {
+//void	Request::check_location_or_dir_if_exist(void) {
+void	Request::check_location_and_dir_and_red(void) {
 	//std::vector<std::string>	hld;
 
 	//hld = this->split(this->substr_sp(this->uri, '/'), '/');
@@ -330,6 +334,8 @@ void	Request::check_location_if_exist(void) {
 	size_t	i;
 	std::string	hld;
 	std::string hld_loc;
+	struct stat stt;
+	bool	chk = false;
 	for (i = 0; this->uri[i] && this->uri[i] == '/'; i++)
 		;
 	if (i == this->uri.length())
@@ -345,19 +351,87 @@ void	Request::check_location_if_exist(void) {
 	//std::cout << hld << std::endl;
 
 	//here search for the location path
-	for (std::map<std::string, Location*>::iterator itr = this->server->get_location().begin(); \
-			itr != this->server->get_location().end(); itr++) {
+	std::map<std::string, Location*>::iterator itr;
+	for (itr = this->server->get_location().begin(); itr != this->server->get_location().end(); itr++) {
 		hld_loc = fix_location_slashes(itr->first);
-		//std::cout << hld_loc << std::endl;
+		//std::cout << "* "<< hld_loc << std::endl;
 		if (!hld_loc.compare(hld)) {
-			//*location_data = *itr->second;
+			chk = true;
 			this->location_data = new Default_serv(*this->server, *itr->second);
-			return ;
+			//this->root_uri = this->location_data->get_root() + hld;
+			//this->check_location_redirection();
+			//return ;
 		}
 	}
-	this->location_data = new Default_serv(*this->server);
-	while (1);
-	
+	if (!chk)
+		this->location_data = new Default_serv(*this->server);
+	this->root_uri = this->location_data->get_root() + hld;
+	//std::cout << this->root_uri << std::endl;
+	if (stat(this->root_uri.c_str(), &stt) == -1) {
+		if (chk)
+			this->check_location_redirection();
+		else
+			throw "404";
+	}
+}
+
+void	Request::check_location_redirection(void) {
+	//only 301 can be in return
+	if (!this->location_data->get_retur().size())
+		throw "404";
+	this->res_header.insert(std::make_pair("Location", this->location_data->get_retur().begin()->second));
+	throw "301";
+}
+
+void	Request::check_if_method_allowed(void) {
+	//maybe i should not have GET method by default
+	//if (!this->location_data->get_allow_method().size())
+	//	throw "405";
+	std::vector<std::string> hld = this->location_data->get_allow_methods();
+	//for (std::vector<std::string>::iterator itr = hld.begin(); itr != hld.end(); itr++) {
+	//	std::cout << *itr << std::endl;
+	//}
+	//std::cout << "********" << std::endl;
+	if (std::find(hld.begin(), hld.end(), this->method) == hld.end())
+		throw "405";
+	//std::cout << "method allowed" << std::endl;
+
+	//if (this->method.compare())
+}
+
+void	Request::get_method(void) {
+	struct stat	stt;
+
+	stat(this->root_uri.c_str(), &stt);
+	std::cout << "get method: " << this->root_uri << std::endl;
+	if (S_ISDIR(stt.st_mode)) {
+		std::cout << "dir ** " << this->hld_uri << std::endl;
+		if (this->hld_uri.back() != '/') {
+			this->res_header.insert(std::make_pair("Location", this->hld_uri + "/"));
+			throw "301";
+		}
+		if (this->check_if_dir_has_index()) {
+
+		}
+	}
+	//here it will take symbolic link and more
+	else if (S_ISREG(stt.st_mode)) {
+		std::cout << "file ** " << this->hld_uri << std::endl;
+	}
+	//in this case if it was a non file or dir throw an error
+	//here sock and other
+	else {
+		//maybe here throw 500 ineternal server error
+		std::cout << "something else ** " << this->hld_uri << std::endl;
+	}
+}
+
+void	Request::post_method(void) {
+
+}
+
+void	Request::delete_method(void) {
+
 }
 
 void	Request::handle_request_and_response(int &chk) {
@@ -381,7 +455,19 @@ void	Request::handle_request_and_response(int &chk) {
 		if (!this->parse_body())
 			return ;
 		//std::cout << "ll" << std::endl;
-		this->check_location_if_exist();
+		this->check_location_and_dir_and_red();
+		//check the redirection in up
+		//this->check_location_redirection();
+		this->check_if_method_allowed();
+
+		//typedef	
+
+		if (!this->method.compare("GET"))
+			this->get_method();
+		else if (!this->method.compare("POST"))
+			this->post_method();
+		else if (!this->method.compare("DELETE"))
+			this->delete_method();
 
 		//
 		//this->send_the_request("400");

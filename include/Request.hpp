@@ -10,6 +10,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <sys/stat.h>
 #include <sstream>
 #include "Server.hpp"
 #define URI "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;="
@@ -44,6 +45,10 @@ class Request {
 
 		//server where data is
 		Server	*server;
+
+
+		//this one holds root + the uri
+		std::string root_uri;
 	public :
 		Request(void);
 		Request(const Request &obj);
@@ -60,10 +65,15 @@ class Request {
 		bool	parse_body(void);
 		bool	check_uri_character(char c);
 		void	send_the_request(std::string status);
-		void	check_location_if_exist(void);
+		void	check_location_and_dir_and_red(void);
 		std::string	substr_sp(std::string path, char sp);
 		void	fix_uri_slashes(std::string right_uri, std::string &uri);
 		std::string	fix_location_slashes(std::string location);
+		void	check_location_redirection(void);
+		void	check_if_method_allowed(void);
+		void	get_method(void);
+		void	post_method(void);
+		void	delete_method(void);
 		//setters
 		void	set_req_input(char *buff, int size);
 		void	set_fd(int fd);

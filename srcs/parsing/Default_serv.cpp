@@ -18,6 +18,7 @@ Default_serv::Default_serv(void)
 
 	this->host = "127.0.0.1";
 	this->root = "var/www/";
+	//i should resize client max body size long to 0
 	this->client_max_body_size = "10000";
 	this->upload = 0;
 	this->autoindex = 0;
