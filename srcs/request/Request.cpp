@@ -365,7 +365,9 @@ void	Request::check_location_and_dir_and_red(void) {
 	}
 	if (!chk)
 		this->location_data = new Default_serv(*this->server);
-	this->root_uri = this->location_data->get_root() + hld;
+	//this->root_uri = this->location_data->get_root() + hld;
+	this->root_uri = this->location_data->get_root() + this->hld_uri;
+
 	//std::cout << this->root_uri << std::endl;
 	if (stat(this->root_uri.c_str(), &stt) == -1) {
 		if (chk)
@@ -399,19 +401,120 @@ void	Request::check_if_method_allowed(void) {
 	//if (this->method.compare())
 }
 
+bool	Request::check_if_dir_has_index(void) {
+	DIR *dir;
+	struct dirent *opn;
+
+	//std::cout << "** " << this->root_uri << std::endl;
+	//std::cout << "! " << this->root_uri + *this->location_data->get_index().begin() << std::endl;
+	std::vector<std::string>	hld;
+	std::vector<std::string>	hld_path;
+	struct stat stt;
+	std::vector<std::string>	index = this->location_data->get_index();
+	std::string uri_index;
+	for (std::vector<std::string>::iterator itr = index.begin(); itr != index.end(); itr++) {
+		std::cout << *itr << std::endl;
+		hld = this->split(this->substr_sp(*itr, '/'), '/');
+		if (!hld.size())
+			continue ;
+			//throw "403";
+		if (itr->back() == '/') {
+			for (std::string::iterator st = itr->end() - 1; \
+					itr->length() && *st == '/'; st = itr->end() - 1)
+				itr->erase(st);
+			//std::cout << "itr = " << *itr << std::endl;
+			uri_index = this->root_uri + *itr;
+			//std::cout << "uri_index = " << uri_index << std::endl;
+			if (stat(uri_index.c_str(), &stt) == -1 || S_ISDIR(stt.st_mode))
+				continue ;
+				//throw "403";
+			else
+				continue ;
+				//throw "404";
+		}
+		//	/index.html
+		//	../index.html
+		if (itr->front() == '/')
+			uri_index = this->location_data->get_root();
+		else
+			uri_index = this->root_uri;
+		// here check if index start with / and if the index have root inside it
+
+		size_t size = uri_index.length();
+		std::cout << uri_index << std::endl;
+		hld_path = this->split(this->substr_sp(uri_index, '/'), '/');
+		//check if root was only /
+		for (std::vector<std::string>::iterator path_itr = hld.begin(); path_itr != hld.end() ; path_itr++) {
+			if (!path_itr->compare(".."))
+				hld_path.pop_back();
+			else
+				hld_path.push_back(*path_itr);
+		}
+
+		uri_index.clear();
+		for (size_t i = 0; i != hld_path.size(); i++) {
+			uri_index.append("/");
+			uri_index.append(hld_path[i]);
+		}
+		std::cout << uri_index << std::endl;
+		std::cout << this->root_uri.substr(0, size) << std::endl;
+		//here should be not
+		if (itr->front() != '/' && !uri_index.compare(0, size, this->root_uri, 0, size)) {
+			//maybe here just continue
+			std::cout << "true" << std::endl;
+		}
+		else
+			std::cout << "wrong" << std::endl;
+
+		std::fstream	in;
+
+		in.open(uri_index, std::fstream::in);
+		if (in.is_open())
+			return (true);
+
+
+
+
+		//uri_index.erase(uri_index.end() - 1);
+
+		//std::cout << uri_index << std::endl;
+		//exit(1);
+
+		//for (size_t i = 0; i != hld.size(); i++) {
+		//	std::cout << "	" << hld[i] << std::endl;
+		//}
+
+	}
+	//here i should throw an exception
+	while (1);
+	
+	//close dir
+	dir = opendir(this->root_uri.c_str());
+	while ((opn = readdir(dir))) {
+		if (opn->d_type == DT_DIR)
+			std::cout << "dir = " << opn->d_name << std::endl;
+		else if (opn->d_type == DT_REG)
+			std::cout << "file = " << opn->d_name << std::endl;
+	}
+	//if (!dir)
+	//	std::cout << "error "<< std::endl;
+
+	return (true);
+}
+
 void	Request::get_method(void) {
 	struct stat	stt;
 
 	stat(this->root_uri.c_str(), &stt);
-	std::cout << "get method: " << this->root_uri << std::endl;
+	//std::cout << "get method: " << this->root_uri << std::endl;
 	if (S_ISDIR(stt.st_mode)) {
-		std::cout << "dir ** " << this->hld_uri << std::endl;
+		//std::cout << "dir ** " << this->hld_uri << std::endl;
 		if (this->hld_uri.back() != '/') {
 			this->res_header.insert(std::make_pair("Location", this->hld_uri + "/"));
 			throw "301";
 		}
 		if (this->check_if_dir_has_index()) {
-
+			while (1);
 		}
 	}
 	//here it will take symbolic link and more

@@ -11,10 +11,13 @@ Default_serv::Default_serv(void)
 	this->status_page.insert(std::make_pair(200, "status_page/200.html"));
 	this->status_page.insert(std::make_pair(301, "status_page/301.html"));
 	this->status_page.insert(std::make_pair(400, "status_page/400.html"));
+	this->status_page.insert(std::make_pair(403, "status_page/403.html"));
 	this->status_page.insert(std::make_pair(404, "status_page/404.html"));
 	this->status_page.insert(std::make_pair(405, "status_page/405.html"));
 	this->status_page.insert(std::make_pair(503, "status_page/503.html"));
 	this->status_page.insert(std::make_pair(505, "status_page/505.html"));
+	//std::string	status = "200OK 201Created 204No_Content 301Moved_Permanently 400Bad_Request 403Forbidden 404Not_Found 405Method_Not_Allowed 409Conflict 413Content_Too_Large 414URI_Too_Long 500Internal_Server_Error 501Not_Implemented";
+
 
 	this->host = "127.0.0.1";
 	this->root = "var/www/";

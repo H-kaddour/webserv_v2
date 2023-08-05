@@ -74,6 +74,7 @@ class Request {
 		void	get_method(void);
 		void	post_method(void);
 		void	delete_method(void);
+		bool	check_if_dir_has_index(void);
 		//setters
 		void	set_req_input(char *buff, int size);
 		void	set_fd(int fd);
