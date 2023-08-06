@@ -417,7 +417,6 @@ bool	Request::check_if_dir_has_index(void) {
 	std::string index_path;
 	struct stat stt;
 	std::vector<std::string>	all_index = this->location_data->get_index();
-			int i = 0;
 	for (std::vector<std::string>::iterator index = all_index.begin(); index != all_index.end(); index++) {
 		//std::cout << *itr << std::endl;
 		index_sp = this->split(this->substr_sp(*index, '/'), '/');
@@ -428,7 +427,7 @@ bool	Request::check_if_dir_has_index(void) {
 		index_path = (index->front() == '/' ? this->location_data->get_root() : this->root_uri);
 		// here check if index start with / and if the index have root inside it
 
-		std::cout << "path = " << (index_path + *index) << std::endl;
+		//std::cout << "path = " << (index_path + *index) << std::endl;
 		if (stat((index_path + *index).c_str(), &stt) == -1)
 			continue ;
 
@@ -436,58 +435,47 @@ bool	Request::check_if_dir_has_index(void) {
 			continue ;
 		//else dayz accept socket and other
 
-		if (index->front() != '/') {
-			size_t size = index_path.length();
-			//std::cout << uri_index << std::endl;
-			index_path_sp = this->split(this->substr_sp(index_path, '/'), '/');
-			//check if root was only /
-			//exit(1);
-			for (std::vector<std::string>::iterator sp_itr = index_sp.begin(); \
-					sp_itr != index_sp.end() ; sp_itr++) {
-				//here check if i was only poppin ../../../../ also check / only in the root
-				//(!sp_itr->compare("..") ? (index_path_sp.pop_back()) : index_path_sp.push_back(*sp_itr));
-				if (!sp_itr->compare("..")) {
-					if (index_path_sp.size())
-						index_path_sp.pop_back();
-				}
-				else
-					index_path_sp.push_back(*sp_itr);
+		size_t size = index_path.length();
+		//std::cout << uri_index << std::endl;
+		index_path_sp = this->split(this->substr_sp(index_path, '/'), '/');
+		//check if root was only /
+		//exit(1);
+		for (std::vector<std::string>::iterator sp_itr = index_sp.begin(); \
+				sp_itr != index_sp.end() ; sp_itr++) {
+			//here check if i was only poppin ../../../../ also check / only in the root
+			//(!sp_itr->compare("..") ? (index_path_sp.pop_back()) : index_path_sp.push_back(*sp_itr));
+			if (!sp_itr->compare("..")) {
+				if (index_path_sp.size())
+					index_path_sp.pop_back();
 			}
-			index_path.clear();
-			//here check if size is 0
-			for (size_t i = 0; i != index_path_sp.size(); i++) {
-				//here check if root start with /
-				index_path.append("/");
-				if (!i && this->root_uri.front() != '/')
-					index_path.erase(index_path.begin());
-				index_path.append(index_path_sp[i]);
-			}
-			//std::cout << uri_index << std::endl;
-			//std::cout << this->root_uri.substr(0, size) << std::endl;
-			//here should be not
-				//this one still have error have to be fix asap maybe it's right
-			if (index_path.compare(0, size, this->root_uri, 0, size))
-			{
-				std::cout << "hey = " << i << std::endl;
-				continue ;
-			}
-			//keep the path of the index file in a variable so you can read it in the path body response
-			i++;
+			else
+				index_path_sp.push_back(*sp_itr);
 		}
+		index_path.clear();
+		//here check if size is 0
+		for (size_t i = 0; i != index_path_sp.size(); i++) {
+			//here check if root start with /
+			index_path.append("/");
+			if (!i && this->root_uri.front() != '/')
+				index_path.erase(index_path.begin());
+			index_path.append(index_path_sp[i]);
+		}
+		//this one still have error have to be fix asap maybe it's right
+		if (index->front() != '/' && index_path.compare(0, size, this->root_uri, 0, size))
+			continue ;
+		//keep the path of the index file in a variable so you can read it in the path body response
+		this->file_path_body = index_path;
+		std::cout << this->file_path_body << std::endl;
 		return true;
 
 		//if (index->front() != '/' && index_path.compare(0, size, this->root_uri, 0, size))
 		//	continue ;
-
 
 		//std::fstream	in;
 
 		//in.open(index_path, std::fstream::in);
 		//if (in.is_open())
 		//	return (true);
-
-
-
 
 		//uri_index.erase(uri_index.end() - 1);
 
@@ -513,7 +501,7 @@ bool	Request::check_if_dir_has_index(void) {
 	//if (!dir)
 	//	std::cout << "error "<< std::endl;
 
-	return (false);
+	return false;
 }
 
 void	Request::get_method(void) {
@@ -527,8 +515,16 @@ void	Request::get_method(void) {
 			this->res_header.insert(std::make_pair("Location", this->hld_uri + "/"));
 			throw "301";
 		}
+		//this fucntion need more test
 		if (this->check_if_dir_has_index()) {
-			while (1);
+			std::cout << "index exists" << std::endl;
+		}
+		else {
+			if (!this->location_data->get_autoindex())
+				throw "403";
+			//check if empty means the body is full if not read the file
+			this->file_path_body.clear();
+			throw "200";
 		}
 	}
 	//here it will take symbolic link and more

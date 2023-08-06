@@ -49,6 +49,9 @@ class Request {
 
 		//this one holds root + the uri
 		std::string root_uri;
+
+		//this is the path of the file i will read in response body
+		std::string	file_path_body;
 	public :
 		Request(void);
 		Request(const Request &obj);

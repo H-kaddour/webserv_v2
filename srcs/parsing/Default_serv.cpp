@@ -248,9 +248,9 @@ void	Default_serv::set_client_max_body_size(std::vector<std::string> data) {
 
 void	Default_serv::set_upload(std::vector<std::string> data) {
 	if (!data[0].compare("on"))
-		this->upload = 1;
+		this->upload = true;
 	else if (!data[0].compare("off"))
-		this->upload = 0;
+		this->upload = false;
 	else
 		throw ("Error: wrong syntax upload only takes on/off.");
 }
@@ -261,9 +261,9 @@ void	Default_serv::set_upload(int data) {
 
 void	Default_serv::set_autoindex(std::vector<std::string> data) {
 	if (!data[0].compare("on"))
-		this->autoindex = 1;
+		this->autoindex = true;
 	else if (!data[0].compare("off"))
-		this->autoindex = 0;
+		this->autoindex = false;
 	else
 		throw ("Error: wrong syntax autoindex only takes on/off.");
 }
@@ -327,11 +327,11 @@ std::string Default_serv::get_client_max_body_size(void) const {
 	return (this->client_max_body_size);
 }
 
-int	Default_serv::get_upload(void) const {
+bool	Default_serv::get_upload(void) const {
 	return (this->upload);
 }
 
-int	Default_serv::get_autoindex(void) const {
+bool	Default_serv::get_autoindex(void) const {
 	return (this->autoindex);
 }
 

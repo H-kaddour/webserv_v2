@@ -6,7 +6,7 @@
 /*   By: hkaddour <hkaddour@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 10:34:30 by hkaddour          #+#    #+#             */
-/*   Updated: 2023/08/06 03:51:39 by hkaddour         ###   ########.fr       */
+/*   Updated: 2023/08/06 17:46:22 by hkaddour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,8 @@ class Default_serv
 	std::string	host;
 	std::string root;
 	std::string	client_max_body_size;
-	int	upload;
-	int	autoindex;
+	bool	upload;
+	bool	autoindex;
 	std::vector<std::string>	allow_methods;
 	//this one for location
 	std::vector<std::pair<int, std::string> > retur;
@@ -77,8 +77,8 @@ class Default_serv
 		std::string get_host(void) const;
 		std::string get_root(void) const;
 		std::string get_client_max_body_size(void) const;
-		int	get_upload(void) const;
-		int	get_autoindex(void) const;
+		bool	get_upload(void) const;
+		bool	get_autoindex(void) const;
 		std::vector<std::string> get_allow_methods(void) const;
 		std::vector<std::pair<int, std::string> >	get_retur(void) const;
 
