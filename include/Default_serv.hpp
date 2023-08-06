@@ -6,7 +6,7 @@
 /*   By: hkaddour <hkaddour@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 10:34:30 by hkaddour          #+#    #+#             */
-/*   Updated: 2023/07/30 12:58:24 by hkaddour         ###   ########.fr       */
+/*   Updated: 2023/08/06 03:51:39 by hkaddour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <algorithm>
 #include <map>
 
 class Default_serv

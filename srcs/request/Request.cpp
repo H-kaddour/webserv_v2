@@ -46,7 +46,7 @@ void	Request::set_req_input(char *buff, int size) {
 	//std::cout << this->req_input << std::endl;
 	//while (1);
 
-	//if ((this->req_input.find("\n\n") != this->req_input.npos) || \
+	//if ((this->req_input.find("\n\n") != this->req_input.npos) ||
 	//		(this->req_input.find("\n\r\n") != this->req_input.npos))
 	//	return 1;
 	//return 0;
@@ -222,7 +222,8 @@ void	Request::parse_header(void) {
 
 bool	Request::parse_body(void) {
 	//here check if content length is int and give it to a long
-	std::map<std::string, std::string>::iterator itr = this->req_headers.find("Content-Length");
+
+	//std::map<std::string, std::string>::iterator itr = this->req_headers.find("Content-Length");
 	this->req_body.append(this->req_input);
 	//this clear should not be in here
 	this->req_input.clear();
@@ -237,9 +238,13 @@ bool	Request::parse_body(void) {
 	//	if (!this->req_input.length())
 	//		return true;
 	//}
-	if (this->req_body.length() == static_cast<size_t>(atol(itr->second.c_str())))
-		return true;
-	return false;
+
+	//comment for now
+	//if (this->req_body.length() == static_cast<size_t>(atol(itr->second.c_str())))
+	//	return true;
+	//return false;
+
+	return true;
 }
 
 void	Request::set_res_body(void) {
@@ -402,75 +407,84 @@ void	Request::check_if_method_allowed(void) {
 }
 
 bool	Request::check_if_dir_has_index(void) {
-	DIR *dir;
-	struct dirent *opn;
+	//DIR *dir;
+	//struct dirent *opn;
 
 	//std::cout << "** " << this->root_uri << std::endl;
 	//std::cout << "! " << this->root_uri + *this->location_data->get_index().begin() << std::endl;
-	std::vector<std::string>	hld;
-	std::vector<std::string>	hld_path;
+	std::vector<std::string>	index_sp;
+	std::vector<std::string>	index_path_sp;
+	std::string index_path;
 	struct stat stt;
-	std::vector<std::string>	index = this->location_data->get_index();
-	std::string uri_index;
-	for (std::vector<std::string>::iterator itr = index.begin(); itr != index.end(); itr++) {
-		std::cout << *itr << std::endl;
-		hld = this->split(this->substr_sp(*itr, '/'), '/');
-		if (!hld.size())
-			continue ;
-			//throw "403";
-		if (itr->back() == '/') {
-			for (std::string::iterator st = itr->end() - 1; \
-					itr->length() && *st == '/'; st = itr->end() - 1)
-				itr->erase(st);
-			//std::cout << "itr = " << *itr << std::endl;
-			uri_index = this->root_uri + *itr;
-			//std::cout << "uri_index = " << uri_index << std::endl;
-			if (stat(uri_index.c_str(), &stt) == -1 || S_ISDIR(stt.st_mode))
+	std::vector<std::string>	all_index = this->location_data->get_index();
+			int i = 0;
+	for (std::vector<std::string>::iterator index = all_index.begin(); index != all_index.end(); index++) {
+		//std::cout << *itr << std::endl;
+		index_sp = this->split(this->substr_sp(*index, '/'), '/');
+		if (!index_sp.size() || index->back() == '/')
 				continue ;
-				//throw "403";
-			else
-				continue ;
-				//throw "404";
-		}
 		//	/index.html
 		//	../index.html
-		if (itr->front() == '/')
-			uri_index = this->location_data->get_root();
-		else
-			uri_index = this->root_uri;
+		index_path = (index->front() == '/' ? this->location_data->get_root() : this->root_uri);
 		// here check if index start with / and if the index have root inside it
 
-		size_t size = uri_index.length();
-		std::cout << uri_index << std::endl;
-		hld_path = this->split(this->substr_sp(uri_index, '/'), '/');
-		//check if root was only /
-		for (std::vector<std::string>::iterator path_itr = hld.begin(); path_itr != hld.end() ; path_itr++) {
-			if (!path_itr->compare(".."))
-				hld_path.pop_back();
-			else
-				hld_path.push_back(*path_itr);
-		}
+		std::cout << "path = " << (index_path + *index) << std::endl;
+		if (stat((index_path + *index).c_str(), &stt) == -1)
+			continue ;
 
-		uri_index.clear();
-		for (size_t i = 0; i != hld_path.size(); i++) {
-			uri_index.append("/");
-			uri_index.append(hld_path[i]);
-		}
-		std::cout << uri_index << std::endl;
-		std::cout << this->root_uri.substr(0, size) << std::endl;
-		//here should be not
-		if (itr->front() != '/' && !uri_index.compare(0, size, this->root_uri, 0, size)) {
-			//maybe here just continue
-			std::cout << "true" << std::endl;
-		}
-		else
-			std::cout << "wrong" << std::endl;
+		if (S_ISDIR(stt.st_mode))
+			continue ;
+		//else dayz accept socket and other
 
-		std::fstream	in;
+		if (index->front() != '/') {
+			size_t size = index_path.length();
+			//std::cout << uri_index << std::endl;
+			index_path_sp = this->split(this->substr_sp(index_path, '/'), '/');
+			//check if root was only /
+			//exit(1);
+			for (std::vector<std::string>::iterator sp_itr = index_sp.begin(); \
+					sp_itr != index_sp.end() ; sp_itr++) {
+				//here check if i was only poppin ../../../../ also check / only in the root
+				//(!sp_itr->compare("..") ? (index_path_sp.pop_back()) : index_path_sp.push_back(*sp_itr));
+				if (!sp_itr->compare("..")) {
+					if (index_path_sp.size())
+						index_path_sp.pop_back();
+				}
+				else
+					index_path_sp.push_back(*sp_itr);
+			}
+			index_path.clear();
+			//here check if size is 0
+			for (size_t i = 0; i != index_path_sp.size(); i++) {
+				//here check if root start with /
+				index_path.append("/");
+				if (!i && this->root_uri.front() != '/')
+					index_path.erase(index_path.begin());
+				index_path.append(index_path_sp[i]);
+			}
+			//std::cout << uri_index << std::endl;
+			//std::cout << this->root_uri.substr(0, size) << std::endl;
+			//here should be not
+				//this one still have error have to be fix asap maybe it's right
+			if (index_path.compare(0, size, this->root_uri, 0, size))
+			{
+				std::cout << "hey = " << i << std::endl;
+				continue ;
+			}
+			//keep the path of the index file in a variable so you can read it in the path body response
+			i++;
+		}
+		return true;
 
-		in.open(uri_index, std::fstream::in);
-		if (in.is_open())
-			return (true);
+		//if (index->front() != '/' && index_path.compare(0, size, this->root_uri, 0, size))
+		//	continue ;
+
+
+		//std::fstream	in;
+
+		//in.open(index_path, std::fstream::in);
+		//if (in.is_open())
+		//	return (true);
 
 
 
@@ -486,20 +500,20 @@ bool	Request::check_if_dir_has_index(void) {
 
 	}
 	//here i should throw an exception
-	while (1);
+	//while (1);
 	
 	//close dir
-	dir = opendir(this->root_uri.c_str());
-	while ((opn = readdir(dir))) {
-		if (opn->d_type == DT_DIR)
-			std::cout << "dir = " << opn->d_name << std::endl;
-		else if (opn->d_type == DT_REG)
-			std::cout << "file = " << opn->d_name << std::endl;
-	}
+	//dir = opendir(this->root_uri.c_str());
+	//while ((opn = readdir(dir))) {
+	//	if (opn->d_type == DT_DIR)
+	//		std::cout << "dir = " << opn->d_name << std::endl;
+	//	else if (opn->d_type == DT_REG)
+	//		std::cout << "file = " << opn->d_name << std::endl;
+	//}
 	//if (!dir)
 	//	std::cout << "error "<< std::endl;
 
-	return (true);
+	return (false);
 }
 
 void	Request::get_method(void) {

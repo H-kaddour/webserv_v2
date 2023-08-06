@@ -96,7 +96,7 @@ void	Parsing::parse_file(void)
 	{
 		std::ifstream	in;
 	
-		in.open(this->config_file);
+		in.open(this->config_file.c_str());
 		if (!in.is_open())
 			throw ("Error: file not exist");
 		std::getline(in, this->input, '\0');
