@@ -248,11 +248,23 @@ bool	Request::parse_body(void) {
 }
 
 void	Request::set_res_body(void) {
+
+
+	//here i should open the file_path file not this and i should check if the body is empty
+	if (this->res_body.size())
+		return ;
+	//std::map<int, std::string> page = this->server->get_status_page();
+	//
+	//fix this one in header and request line this->location_data don't get set
+	//std::map<int, std::string> page = this->location_data->get_status_page();
+	//std::map<int, std::string>::iterator itr = page.find(atoi(this->res_status.first.c_str()));
 	std::map<int, std::string> page = this->server->get_status_page();
-	std::map<int, std::string>::iterator itr = page.find(atoi(this->res_status.first.c_str()));
+	std::string	file = page.find(atoi(this->res_status.first.c_str()))->second;
+	if (file_path_body.length())
+		file = this->file_path_body;
 	std::ifstream in;
 	//char c;
-	in.open(itr->second);
+	in.open(file);
 	//here error those one check them in the parsing
 	if (!in.is_open())
 		exit(1);
@@ -275,7 +287,7 @@ void	Request::set_res_header(void) {
 	itr->second = "close";
 }
 
-void	Request::send_the_request(std::string status) {
+void	Request::send_the_response(std::string status) {
 	//i will make a path var holds what file will open to read the body
 	this->set_res_status(status);
 	this->set_res_body();
@@ -465,7 +477,7 @@ bool	Request::check_if_dir_has_index(void) {
 			continue ;
 		//keep the path of the index file in a variable so you can read it in the path body response
 		this->file_path_body = index_path;
-		std::cout << this->file_path_body << std::endl;
+		//std::cout << this->file_path_body << std::endl;
 		return true;
 
 		//if (index->front() != '/' && index_path.compare(0, size, this->root_uri, 0, size))
@@ -504,12 +516,41 @@ bool	Request::check_if_dir_has_index(void) {
 	return false;
 }
 
+bool	Request::check_if_loc_has_cgi(void) {
+	std::string	file;
+	std::string	extension;
+	std::vector<std::pair<std::string, std::string> > cgi = this->location_data->get_cgi_info();
+	std::vector<std::pair<std::string, std::string> >::iterator itr;
+	size_t find;
+
+	if (cgi.size()) {
+		file = this->file_path_body.substr(\
+				this->file_path_body.rfind('/') + 1, this->file_path_body.length() - 1);
+		//std::cout << extension << std::endl;
+		if ((find = file.find('.')) == file.npos)
+			return false;
+		extension = file.substr(find, file.length() - 1);
+		//std::cout << extension << std::endl;
+		for (itr = cgi.begin(); itr != cgi.end(); itr++) {
+			if (!itr->first.compare(extension))
+				return true;
+		}
+	}
+	return false;
+}
+
 void	Request::get_method(void) {
 	struct stat	stt;
+	struct stat	stt1;
+	DIR	*dir;
+	struct dirent *file;
 
+
+	std::cout << "* " << this->root_uri << std::endl;
 	stat(this->root_uri.c_str(), &stt);
 	//std::cout << "get method: " << this->root_uri << std::endl;
 	if (S_ISDIR(stt.st_mode)) {
+		std::cout << "dir" << std::endl;
 		//std::cout << "dir ** " << this->hld_uri << std::endl;
 		if (this->hld_uri.back() != '/') {
 			this->res_header.insert(std::make_pair("Location", this->hld_uri + "/"));
@@ -517,18 +558,73 @@ void	Request::get_method(void) {
 		}
 		//this fucntion need more test
 		if (this->check_if_dir_has_index()) {
-			std::cout << "index exists" << std::endl;
+			//this->res_body += "<?php\r\n";
+			//this->res_body += "phpinfo()\r\n";
+			//throw "200";
+			//std::string l = "hey.pyy";
+			//if (l.find(".py") != l.npos) {
+			//	std::cout << "true" <<  std::endl;
+			//}
+			//else {
+			//	std::cout << "false" << std::endl;
+			//}
+			//std::cout << this->file_path_body << std::endl;
+			if (this->check_if_loc_has_cgi()) {
+				//here send it to CGI
+				//std::cout << "index exists" << std::endl;
+			}
+			else {
+				//std::map<int, std::string> page = this->server->get_status_page();
+				//std::map<int, std::string>::iterator itr = page.find(200);
+				//itr->second = this->file_path_body;
+				//std::cout << "ll" << std::endl;
+				throw "200";
+				std::cout << "index doesn't exists" << std::endl;
+			}
 		}
 		else {
 			if (!this->location_data->get_autoindex())
 				throw "403";
 			//check if empty means the body is full if not read the file
-			this->file_path_body.clear();
+			//this->file_path_body.clear();
+			//std::cout << this->root_uri << std::endl;
+			dir = opendir(this->root_uri.c_str());
+			this->res_body.append("<!DOCTYPE html>\r\n");
+			this->res_body.append("<html>\r\n");
+			//this->res_body.append("<head>Index of </head>\r\n");
+			this->res_body += "<head><title>Index of " + this->hld_uri + "</title></head>\r\n";
+			this->res_body.append("<body>\r\n");
+			this->res_body += "<h1>Index of " + this->hld_uri + "</h1>\r\n";
+			this->res_body += "<pre class=\"tab\">\r\n";
+			while ((file = readdir(dir))) {
+				std::string hld = file->d_name;
+				if (file->d_type == DT_DIR)
+					hld.push_back('/');
+				stat((this->root_uri + file->d_name).c_str(), &stt1);
+				this->res_body += "<a href=\"" + hld + "\">" + hld + "</a>";
+				this->res_body += "				";
+				hld = ctime(&stt1.st_mtimespec.tv_sec);
+				hld.erase(hld.end() - 1);
+				this->res_body += hld;
+				this->res_body += "				";
+				this->res_body += std::to_string(stt1.st_size);
+				this->res_body.append("\r\n");
+			}
+			this->res_body += "</pre>\r\n";
+			this->res_body += "<hr>";
+			this->res_body += "<center>webserv/1.0.0</center>";
+			this->res_body.append("</body>\r\n");
+			this->res_body.append("</html>\r\n");
+			//std::cout << this->res_body;
+			//while (1);
 			throw "200";
 		}
 	}
 	//here it will take symbolic link and more
 	else if (S_ISREG(stt.st_mode)) {
+		this->file_path_body = this->root_uri;
+		std::cout << this->file_path_body << std::endl;
+		throw "200";
 		std::cout << "file ** " << this->hld_uri << std::endl;
 	}
 	//in this case if it was a non file or dir throw an error
@@ -614,7 +710,7 @@ void	Request::handle_request_and_response(int &chk) {
 
 		//this->set_res_status(status_code);
 		//this->res_status = *this->status_code_des.find(status);
-		this->send_the_request(status);
+		this->send_the_response(status);
 		//this->response.append(this->response_status_line());
 		//std::cout << this->response << std::endl;
 		//request.append(this->response_status_line());

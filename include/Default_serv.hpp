@@ -6,7 +6,7 @@
 /*   By: hkaddour <hkaddour@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 10:34:30 by hkaddour          #+#    #+#             */
-/*   Updated: 2023/08/06 17:46:22 by hkaddour         ###   ########.fr       */
+/*   Updated: 2023/08/07 10:14:58 by hkaddour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,8 @@ class Default_serv
 	std::string	host;
 	std::string root;
 	std::string	client_max_body_size;
-	bool	upload;
-	bool	autoindex;
+	int	upload;
+	int	autoindex;
 	std::vector<std::string>	allow_methods;
 	//this one for location
 	std::vector<std::pair<int, std::string> > retur;

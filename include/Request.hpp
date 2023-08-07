@@ -12,6 +12,7 @@
 #include <netdb.h>
 #include <sys/stat.h>
 #include <sstream>
+#include <time.h>
 #include "Server.hpp"
 #define URI "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;="
 
@@ -67,7 +68,7 @@ class Request {
 		void	parse_header(void);
 		bool	parse_body(void);
 		bool	check_uri_character(char c);
-		void	send_the_request(std::string status);
+		void	send_the_response(std::string status);
 		void	check_location_and_dir_and_red(void);
 		std::string	substr_sp(std::string path, char sp);
 		void	fix_uri_slashes(std::string right_uri, std::string &uri);
@@ -78,6 +79,7 @@ class Request {
 		void	post_method(void);
 		void	delete_method(void);
 		bool	check_if_dir_has_index(void);
+		bool	check_if_loc_has_cgi(void);
 		//setters
 		void	set_req_input(char *buff, int size);
 		void	set_fd(int fd);

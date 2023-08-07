@@ -31,6 +31,7 @@ Default_serv::Default_serv(void)
 //this one for location
 Default_serv::Default_serv(int) {
 	//std::cout << "Defautl_serv for location constructer" << std::endl;
+	
 	this->upload = -1;
 	this->autoindex = -1;
 }
