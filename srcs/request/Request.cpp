@@ -375,6 +375,7 @@ void	Request::check_location_and_dir_and_red(void) {
 		if (!hld_loc.compare(hld)) {
 			chk = true;
 			this->location_data = new Default_serv(*this->server, *itr->second);
+			break ;
 			//this->root_uri = this->location_data->get_root() + hld;
 			//this->check_location_redirection();
 			//return ;
@@ -397,6 +398,8 @@ void	Request::check_location_and_dir_and_red(void) {
 void	Request::check_location_redirection(void) {
 	//only 301 can be in return
 	if (!this->location_data->get_retur().size())
+		throw "404";
+	if (this->location_data->get_retur().begin()->first != 301)
 		throw "404";
 	this->res_header.insert(std::make_pair("Location", this->location_data->get_retur().begin()->second));
 	throw "301";
