@@ -31,7 +31,9 @@ class Request {
 		//i need here another request uri so i can edit it 
 		//this one to put the location and server data in
 		Default_serv	*location_data;
-		std::string	hld_uri;
+		//this normalize the uri if uri == ///okk// turn to /okk/
+		std::string	normalize_uri;
+		//std::string	hld_uri;
 
 		//attributes of Response
 		std::string	res_http;
@@ -49,10 +51,14 @@ class Request {
 
 
 		//this one holds root + the uri
-		std::string root_uri;
+		//std::string root_uri;
+		std::string path_root_loc;
 
 		//this is the path of the file i will read in response body
 		std::string	file_path_body;
+
+		//this variable check if the uri have a location or not
+		bool	if_has_loc;
 	public :
 		Request(void);
 		Request(const Request &obj);
@@ -80,6 +86,7 @@ class Request {
 		void	delete_method(void);
 		bool	check_if_dir_has_index(void);
 		bool	check_if_loc_has_cgi(void);
+		void	auto_index_page_maker(void);
 		//setters
 		void	set_req_input(char *buff, int size);
 		void	set_fd(int fd);
